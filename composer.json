@@ -1,6 +1,7 @@
 {
     "name": "jeansouzak/duf",
     "description": "DUF (Download and Upload Files) - Fetch URL file, download and upload to a service",
+    "minimum-stability": "dev",
     "require": {
         "guzzlehttp/guzzle": "^6.5",
         "google/cloud-storage": "^1.18"        
