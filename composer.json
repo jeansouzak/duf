@@ -1,0 +1,20 @@
+{
+    "name": "jeansouzak/duf",
+    "description": "DUF (Download and Upload Files) - Fetch URL file, download and upload to a service",
+    "require": {
+        "guzzlehttp/guzzle": "^6.5",
+        "google/cloud-storage": "^1.18"        
+    },
+    "autoload": {
+        "psr-4": {
+            "JeanSouzaK\\Duf\\": "src/"            
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jean Souza",
+            "email": "jeancsouzak@gmail.com"
+        }
+    ]
+}
