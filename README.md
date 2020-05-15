@@ -71,8 +71,8 @@ use JeanSouzaK\Duf\Filter\FileExtensionFilter;
 
 //Call Factory to get google cloud storage duffer instance
 $duf = Duff::getInstance(Duff::GOOGLE_CLOUD_STORAGE, [
-    'project_id' => 'storage-test-277005',
-    'key_path' => '/home/jean/Workspace/estudo/down-up-files/env/storage-test-277005-3334a1054345.json'
+    'project_id' => 'storage-test-227305',
+    'key_path' => '/home/env/storage-test-227305-8472347a39489.json'
 ]);
 
 //Configure a maximum file size to bind in a resource
