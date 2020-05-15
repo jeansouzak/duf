@@ -1,6 +1,6 @@
 <?php
 
-namespace JeanSouzaK\Duf\Upload;
+namespace JeanSouzaK\Duf\Duffer;
 
 use Google\Cloud\Storage\StorageClient;
 

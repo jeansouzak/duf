@@ -1,17 +1,18 @@
 <?php
-declare (strict_types = 1);
+declare(strict_types = 1);
 
 namespace JeanSouzaK\Duf;
 
 use GuzzleHttp\Client;
 use JeanSouzaK\Duf\Prepare\FileResourceFactory;
+use JeanSouzaK\Duf\Filter\Filterable;
+use JeanSouzaK\Duf\Prepare\Resource;
 
-
-abstract class DownloadUploadFile implements Dufable
+abstract class AbstractDuf implements Dufable
 {
     /**
      * Files to prepare
-     * @var [] $fileResources
+     * @var Resource[] $fileResources
      */
     protected $fileResources;
 
@@ -30,33 +31,44 @@ abstract class DownloadUploadFile implements Dufable
      */
     protected $filesToUpload;
 
-    /**     
+    /**
      *
      * @var Client
      */
     protected $client;
+
+    /**
+     * All errored files on apply filters / exceptions
+     *
+     * @var File[]
+     */
+    protected $erroredFiles;
+
+    /**
+     * File filters
+     *
+     * @var []
+     */
+    protected $filters;
 
     public function __construct()
     {
         $this->client = new Client();
         $this->downloadedFiles = [];
         $this->filesToUpload = [];
+        $this->filters = [];
+        $this->erroredFiles = [];
     }
 
-    /**     
-     * Validate and prepare resources to download
-     * @param array $files
-     * @param string $token
-     * @return DownUpFiles
-     */
-    public function prepare(array $files, $token = '')
+    public function prepare(array $resources, $token = '')
     {
-        array_filter($files, function($url, $fileName) {                
-            if(!(is_string($fileName) && !empty($url) && filter_var($url, FILTER_VALIDATE_URL))) {
+        /** @var Resource $resource */
+        array_filter($resources, function ($resource) {
+            if (!(is_string($resource->getName()) && !empty($resource->getUrl()) && filter_var($resource->getUrl(), FILTER_VALIDATE_URL))) {
                 throw new \InvalidArgumentException('One or more files not contain a name, empty or invalid URL');
             }
         }, ARRAY_FILTER_USE_BOTH);
-        $this->fileResources = FileResourceFactory::generateFilesResource($files, $token);
+        $this->fileResources = FileResourceFactory::generateFilesResource($resources, $token);
         return $this;
     }
 
@@ -67,25 +79,28 @@ abstract class DownloadUploadFile implements Dufable
      */
     public function download()
     {
-        foreach ($this->fileResources as $fileResource) {            
+        /** @var Resource $fileResource */
+        foreach ($this->fileResources as $fileResource) {
             $file = new File((string)$fileResource);
             try {
-
                 $response = $this->client->get($fileResource->getUrl(), [
                     'headers' => [
                         $fileResource->getAuthentication()
                     ],
                     'stream' => true
                 ]);
+                
+                $fileResource->processHeaderFilters($response->getHeaders());
 
                 $body = $response->getBody();
                 while (!$body->eof()) {
                     $file->addBytes($body->read(1024));
                 }
-            } catch (\Exception $e) { 
-                $file->setStatus(File::ERROR);
-                $file->setErrorMessage($e->getMessage());
+            } catch (\Exception $e) {                
+                $file->setStatus(File::ERROR);                
+                $file->setErrorMessage($e->getMessage());                
             }
+            
             $this->downloadedFiles[] = $file;
         }
         return $this;
@@ -93,11 +108,17 @@ abstract class DownloadUploadFile implements Dufable
 
 
     public function upload()
-    {
-        $this->filesToUpload = array_filter($this->downloadedFiles, function($downloadedFile) {
-            return $downloadedFile->getStatus() != File::ERROR;
+    {   
+        $this->filesToUpload = array_filter($this->downloadedFiles, function ($downloadedFile) {
+            if($downloadedFile->getStatus() == File::ERROR) {
+                $this->erroredFiles[] = $downloadedFile;
+            } else {
+                return $downloadedFile;
+            }
+            
         });
     }
+
 
     
 
@@ -105,7 +126,7 @@ abstract class DownloadUploadFile implements Dufable
      * Get $fileResources
      *
      * @return  []
-     */ 
+     */
     public function getFileResources()
     {
         return $this->fileResources;
@@ -117,7 +138,7 @@ abstract class DownloadUploadFile implements Dufable
      * @param  []  $fileResources  $fileResources
      *
      * @return  self
-     */ 
+     */
     public function setFileResources($fileResources)
     {
         $this->fileResources = $fileResources;
@@ -129,7 +150,7 @@ abstract class DownloadUploadFile implements Dufable
      * Get files prepared and downloaded
      *
      * @return  File[]
-     */ 
+     */
     public function getDownloadedFiles()
     {
         return $this->downloadedFiles;
@@ -141,7 +162,7 @@ abstract class DownloadUploadFile implements Dufable
      * @param  File[]  $downloadedFiles  Files prepared and downloaded
      *
      * @return  self
-     */ 
+     */
     public function setDownloadedFiles($downloadedFiles)
     {
         $this->downloadedFiles = $downloadedFiles;
@@ -153,7 +174,7 @@ abstract class DownloadUploadFile implements Dufable
      * Get files downloaed and prepared to upload
      *
      * @return  File[]
-     */ 
+     */
     public function getFilesToUpload()
     {
         return $this->filesToUpload;
@@ -165,10 +186,63 @@ abstract class DownloadUploadFile implements Dufable
      * @param  File[]  $filesToUpload  Files downloaed and prepared to upload
      *
      * @return  self
-     */ 
+     */
     public function setFilesToUpload($filesToUpload)
     {
         $this->filesToUpload = $filesToUpload;
+
+        return $this;
+    }
+
+    /**
+     * Get file filters
+     *
+     * @return  []
+     */
+    public function getFilters()
+    {
+        return $this->filters;
+    }
+
+    /**
+     * Set file filters
+     *
+     * @param  []  $filters  File filters
+     *
+     * @return  self
+     */
+    public function setFilters(array $filters)
+    {
+        $this->filters = $filters;
+
+        return $this;
+    }
+
+    public function addFilter(Filterable $filter)
+    {
+        $this->filters[] = $filter;
+    }
+
+    /**
+     * Get all errored files on apply filters / exceptions
+     *
+     * @return  File[]
+     */ 
+    public function getErroredFiles()
+    {
+        return $this->erroredFiles;
+    }
+
+    /**
+     * Set all errored files on apply filters / exceptions
+     *
+     * @param  File[]  $erroredFiles  All errored files on apply filters / exceptions
+     *
+     * @return  self
+     */ 
+    public function setErroredFiles(array $erroredFiles)
+    {
+        $this->erroredFiles = $erroredFiles;
 
         return $this;
     }

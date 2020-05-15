@@ -1,8 +1,7 @@
 <?php
-declare (strict_types = 1);
+declare(strict_types = 1);
 
 namespace JeanSouzaK\Duf;
-
 
 class File
 {
@@ -54,6 +53,14 @@ class File
     private $resultPath;
 
 
+    /**
+     * Boolean to check has error
+     *
+     * @var bool
+     */
+    private $hasError;
+
+
 
     /**
      * Get file bytes
@@ -100,7 +107,9 @@ class File
     public function setStatus(int $status)
     {
         $this->status = $status;
-
+        if ($status == self::ERROR) {
+            $this->hasError = true;
+        }
         return $this;
     }
 
@@ -156,7 +165,7 @@ class File
      * Get result of whole process
      *
      * @return  string
-     */ 
+     */
     public function getResultPath()
     {
         return $this->resultPath;
@@ -168,7 +177,7 @@ class File
      * @param  string  $resultPath  Result of whole process
      *
      * @return  self
-     */ 
+     */
     public function setResultPath(string $resultPath)
     {
         $this->resultPath = $resultPath;
@@ -180,5 +189,29 @@ class File
     public function __toString()
     {
         return $this->status == self::FINISHED ? $this->resultPath : $this->errorMessage;
+    }
+
+    /**
+     * Get boolean to check has error
+     *
+     * @return  bool
+     */
+    public function hasError()
+    {
+        return $this->hasError;
+    }
+
+    /**
+     * Set boolean to check has error
+     *
+     * @param  bool  $hasError  Boolean to check has error
+     *
+     * @return  self
+     */
+    public function setHasError(bool $hasError)
+    {
+        $this->hasError = $hasError;
+
+        return $this;
     }
 }

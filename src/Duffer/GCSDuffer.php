@@ -1,13 +1,14 @@
 <?php
 declare (strict_types = 1);
 
-namespace JeanSouzaK\Duf\Upload;
+namespace JeanSouzaK\Duf\Duffer;
 
 use Google\Cloud\Storage\StorageClient;
 use JeanSouzaK\Duf\File;
 use JeanSouzaK\Duf\DownloadUploadFile;
+use JeanSouzaK\Duf\AbstractDuf;
 
-class GCSUpload extends DownloadUploadFile
+class GCSDuffer extends AbstractDuf
 {
 
     const STORAGE_URI = 'https://storage.googleapis.com/';
@@ -42,6 +43,11 @@ class GCSUpload extends DownloadUploadFile
     public function upload()
     {
         parent::upload();
+        
+        //All files errored/invalid to download
+        if(count($this->filesToUpload) == 0 && count($this->erroredFiles) > 0) {
+            return $this->erroredFiles;
+        }
         if (!count($this->filesToUpload) > 0) {
             throw new \Exception('You should prepare and download valid resources before upload files');
         }
@@ -67,6 +73,6 @@ class GCSUpload extends DownloadUploadFile
                 throw $e;
             }
         }
-        return $this->filesToUpload;
+        return array_merge_recursive($this->erroredFiles , $this->filesToUpload);
     }
 }
