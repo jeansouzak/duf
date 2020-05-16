@@ -133,7 +133,7 @@ $duf->prepare([
     new WebResource('object_two.png', 'https://dummyimage.com/600x400/000/fff.gif', [$webAllowedExtensionFilter]),
     new WebResource('object_three.png', 'https://dummyimage.com/100x100/000/fff', [$webPngSizeFilter, $webAllowedExtensionFilter]),
     new LocalResource('imagem', '/home/test/images/test.jpg', [$localJpgSizeFilter]),
-    new LocalResource('imagem', '/home/test/project/composer.json', [$localAllowedExtensionFilter]),  
+    new LocalResource('composer.json', '/home/test/project/composer.json', [$localAllowedExtensionFilter]),  
 ]);
 
 //Make download prepared files
