@@ -7,6 +7,8 @@ use GuzzleHttp\Client;
 use JeanSouzaK\Duf\Prepare\FileResourceFactory;
 use JeanSouzaK\Duf\Filter\Filterable;
 use JeanSouzaK\Duf\Prepare\Resource;
+use GuzzleHttp\Psr7\Response;
+use JeanSouzaK\Duf\Prepare\WebResource;
 
 abstract class AbstractDuf implements Dufable
 {
@@ -60,15 +62,22 @@ abstract class AbstractDuf implements Dufable
         $this->erroredFiles = [];
     }
 
-    public function prepare(array $resources, $token = '')
+    public function prepare(array $resources, $authorizationHeaders = [])
     {
         /** @var Resource $resource */
-        array_filter($resources, function ($resource) {
-            if (!(is_string($resource->getName()) && !empty($resource->getUrl()) && filter_var($resource->getUrl(), FILTER_VALIDATE_URL))) {
-                throw new \InvalidArgumentException('One or more files not contain a name, empty or invalid URL');
+        array_filter($resources, function ($resource) use ($authorizationHeaders) {
+            if (!(is_string($resource->getName()) && !empty($resource->getUrl()) )) {
+                throw new \InvalidArgumentException('One or more resources not contain an empty name or path');
             }
+            if($resource instanceof WebResource && !filter_var($resource->getUrl(), FILTER_VALIDATE_URL)) {
+                throw new \InvalidArgumentException('One or more web resources contain an invalid URL');
+            }
+            if (count($authorizationHeaders) > 0) {
+                $resource->setAuthentication($authorizationHeaders);
+            }
+            $this->fileResources[] = $resource;
         }, ARRAY_FILTER_USE_BOTH);
-        $this->fileResources = FileResourceFactory::generateFilesResource($resources, $token);
+
         return $this;
     }
 
@@ -83,22 +92,24 @@ abstract class AbstractDuf implements Dufable
         foreach ($this->fileResources as $fileResource) {
             $file = new File((string)$fileResource);
             try {
-                $response = $this->client->get($fileResource->getUrl(), [
-                    'headers' => [
-                        $fileResource->getAuthentication()
-                    ],
-                    'stream' => true
-                ]);
-                
-                $fileResource->processHeaderFilters($response->getHeaders());
-
-                $body = $response->getBody();
-                while (!$body->eof()) {
-                    $file->addBytes($body->read(1024));
+                $response = $fileResource->download();
+                if(!$response) {
+                    $file->setStatus(File::ERROR);
+                    $file->setErrorMessage('Error on download file');
                 }
-            } catch (\Exception $e) {                
-                $file->setStatus(File::ERROR);                
-                $file->setErrorMessage($e->getMessage());                
+                else if($fileResource instanceof WebResource) {                    
+                    $fileResource->processHeaderFilters($response->getHeaders());
+                    $body = $response->getBody();                
+                    while (!$body->eof()) {
+                        $file->addBytes($body->read(1024));
+                    }
+                } else {
+                    $fileResource->processPathFilters(array_merge(pathinfo($fileResource->getUrl()), ['size' => filesize($fileResource->getUrl())]));
+                    $file->addBytes($response);
+                }                
+            } catch (\Exception $e) {
+                $file->setStatus(File::ERROR);
+                $file->setErrorMessage($e->getMessage());
             }
             
             $this->downloadedFiles[] = $file;
@@ -108,14 +119,13 @@ abstract class AbstractDuf implements Dufable
 
 
     public function upload()
-    {   
+    {
         $this->filesToUpload = array_filter($this->downloadedFiles, function ($downloadedFile) {
-            if($downloadedFile->getStatus() == File::ERROR) {
+            if ($downloadedFile->getStatus() == File::ERROR) {
                 $this->erroredFiles[] = $downloadedFile;
             } else {
                 return $downloadedFile;
             }
-            
         });
     }
 
@@ -227,7 +237,7 @@ abstract class AbstractDuf implements Dufable
      * Get all errored files on apply filters / exceptions
      *
      * @return  File[]
-     */ 
+     */
     public function getErroredFiles()
     {
         return $this->erroredFiles;
@@ -239,7 +249,7 @@ abstract class AbstractDuf implements Dufable
      * @param  File[]  $erroredFiles  All errored files on apply filters / exceptions
      *
      * @return  self
-     */ 
+     */
     public function setErroredFiles(array $erroredFiles)
     {
         $this->erroredFiles = $erroredFiles;

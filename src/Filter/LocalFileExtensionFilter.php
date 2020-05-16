@@ -5,7 +5,7 @@ namespace JeanSouzaK\Duf\Filter;
 use JeanSouzaK\Duf\Exception\FileExtensionException;
 use JeanSouzaK\Duf\Tool\ArrayTool;
 
-class FileExtensionFilter implements Filterable, HeaderFilterable
+class LocalFileExtensionFilter implements Filterable, PathFilterable
 {
     const PDF = ['application/pdf', 'pdf'];
     const GIF = ['image/gif', 'gif'];
@@ -30,13 +30,14 @@ class FileExtensionFilter implements Filterable, HeaderFilterable
     }
   
 
-    public function applyHeaderFilter(array $headers) {        
-        if(!array_key_exists('Content-Type', $headers) && count($headers['Content-Type']) > 0){
-            throw new \Exception('Invalid headers for FileExtension applyHeaderFilter');
+    public function applyPathFilters(array $headers) {      
+        
+        if(!array_key_exists('extension', $headers)){
+            throw new \Exception('Invalid extension header for FileExtension applyHeaderFilter');
         }
-        $headerType = $headers['Content-Type'][0];        
-        if(!ArrayTool::inArrayRecursive($headerType, $this->formats)) {
-            throw new FileExtensionException('Invalid file extension file: '.$headerType);
+        $extension = $headers['extension'];        
+        if(!ArrayTool::inArrayRecursive(strtolower($extension), $this->formats)) {
+            throw new FileExtensionException('Invalid file extension file: '.$extension);
         }
     }  
     

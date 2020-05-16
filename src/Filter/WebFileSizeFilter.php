@@ -4,7 +4,7 @@ namespace JeanSouzaK\Duf\Filter;
 
 use JeanSouzaK\Duf\Exception\FileSizeException;
 
-class FileSizeFilter implements Filterable, HeaderFilterable
+class WebFileSizeFilter implements Filterable, HeaderFilterable
 {
     const MB = 'M';
     const KB = 'K';

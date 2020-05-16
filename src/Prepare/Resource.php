@@ -5,25 +5,26 @@ namespace JeanSouzaK\Duf\Prepare;
 
 use JeanSouzaK\Duf\Filter\HeaderFilterable;
 
-class Resource
+
+abstract class Resource implements Resourceable
 {
 
     /**
      * @var string
      */
-    private $url;
+    protected $url;
 
     /**
-     * @var Authentication
+     * @var []
      */
-    private $authentication;
+    protected $authentication;
 
     /**
      * Defined name
      *
      * @var string
      */
-    private $name;
+    protected $name;
 
 
     /**
@@ -31,13 +32,13 @@ class Resource
      *
      * @var Filterable[]
      */
-    private $filters;
+    protected $filters;
 
     /**
      * @var string $url
      * @var Authentication $authentication
      */
-    public function __construct($name, $url, $filters = [], $authentication = null)
+    public function __construct($name, $url, $filters = [], array $authentication = [])
     {
         $this->name = $name;
         $this->url = $url;
@@ -55,16 +56,6 @@ class Resource
     public function getUrl()
     {
         return $this->url;
-    }
-
-    /**
-     * Get the value of authentication
-     *
-     * @return  Authentication
-     */ 
-    public function getAuthentication()
-    {
-        return $this->authentication;
     }
 
     /**
@@ -117,28 +108,35 @@ class Resource
 
 
 
-    /**
-     * Apply header filters
-     *
-     * @param array $headers
-     * @return void
-     * @throws Exception
-     */
-    public function processHeaderFilters($headers)
-    {
-        
-        $headerFilters = array_filter($this->filters, function ($filter) {
-            return $filter instanceof HeaderFilterable;
-        });
-                
-        /** @var HeaderFilterable $headerFilter */
-        foreach ($headerFilters as $headerFilter) {
-            $headerFilter->applyHeaderFilter($headers);
-        }
-    }
-
+   
     public function __toString()
     {
         return $this->name;
+    }
+
+     
+
+    /**
+     * Get the value of authentication
+     *
+     * @return  []
+     */ 
+    public function getAuthentication()
+    {
+        return $this->authentication;
+    }
+
+    /**
+     * Set the value of authentication
+     *
+     * @param  []  $authentication
+     *
+     * @return  self
+     */ 
+    public function setAuthentication(array $authentication)
+    {
+        $this->authentication = $authentication;
+
+        return $this;
     }
 }

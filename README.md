@@ -21,7 +21,7 @@ composer require jeansouzak/duf
 ```php
 
 use JeanSouzaK\Duf\Duff;
-use JeanSouzaK\Duf\Prepare\Resource;
+use JeanSouzaK\Duf\Prepare\WebResource;
 
 $duf = Duff::getInstance(Duff::GOOGLE_CLOUD_STORAGE, [
     'project_id' => 'storage-test-227305',
@@ -30,16 +30,16 @@ $duf = Duff::getInstance(Duff::GOOGLE_CLOUD_STORAGE, [
 
 // - Chaining example -
 $uploadResults = $duf->prepare([
-    new Resource('teste.png', 'https://dummyimage.com/600x400/000/fff')
+    new WebResource('teste.png', 'https://dummyimage.com/600x400/000/fff')
 ])->download()->addBucket('meubucket666')->upload();
 
 
 // - Step-by-step example -
 //Prepare object name and url
 $duf->prepare([
-    new Resource('object_one.png', 'https://dummyimage.com/600x400/000/fff'),
-    new Resource('object_two.png', 'https://dummyimage.com/300x200/000/fff'),
-    new Resource('object_three.png', 'https://dummyimage.com/100x100/000/fff')    
+    new WebResource('object_one.png', 'https://dummyimage.com/600x400/000/fff'),
+    new WebResource('object_two.png', 'https://dummyimage.com/300x200/000/fff'),
+    new WebResource('object_three.png', 'https://dummyimage.com/100x100/000/fff')    
 ]);
 
 
@@ -60,14 +60,49 @@ foreach ($uploadResults as $uploadResult) {
 }
 
 ```
+## Duf will help you if you desire upload a local file as well:
+```php
 
+use JeanSouzaK\Duf\Duff;
+use JeanSouzaK\Duf\Prepare\LocalResource;
+use JeanSouzaK\Duf\Prepare\WebResource;
+
+//Call factory to get google cloud storage duffer
+$duf = Duff::getInstance(Duff::GOOGLE_CLOUD_STORAGE, [
+    'project_id' => 'storage-test-227305',
+    'key_path' => '/home/env/storage-test-227305-8472347a39489.json'
+]);
+
+//Uploading from local file target
+$duf->prepare([
+    new LocalResource('imagem', '/home/test/images/test.jpg')    
+]);
+
+//You can mix local and remote target file
+$duf->prepare([
+    new LocalResource('imagem', '/home/test/images/test.jpg'),
+    new WebResource('teste.png', 'https://dummyimage.com/600x400/000/fff')
+]);
+
+//Make download prepared files
+$duf->download();
+
+//Add google cloud storage bucket name
+$duf->addBucket('meubucket666');
+
+//Upload downloaded files to bucket and get results
+$fileResults = $duf->upload();
+
+```
 ## Using filters:
 ```php
 
 use JeanSouzaK\Duf\Duff;
-use JeanSouzaK\Duf\Filter\FileSizeFilter;
-use JeanSouzaK\Duf\Prepare\Resource;
-use JeanSouzaK\Duf\Filter\FileExtensionFilter;
+use JeanSouzaK\Duf\Prepare\WebResource;
+use JeanSouzaK\Duf\Filter\WebFileSizeFilter;
+use JeanSouzaK\Duf\Filter\WebFileExtensionFilter;
+use JeanSouzaK\Duf\Filter\LocalFileSizeFilter;
+use JeanSouzaK\Duf\Filter\LocalFileExtensionFilter;
 
 //Call Factory to get google cloud storage duffer instance
 $duf = Duff::getInstance(Duff::GOOGLE_CLOUD_STORAGE, [
@@ -75,19 +110,28 @@ $duf = Duff::getInstance(Duff::GOOGLE_CLOUD_STORAGE, [
     'key_path' => '/home/jean/Workspace/estudo/down-up-files/env/storage-test-277005-3334a1054345.json'
 ]);
 
-//Configure a maximum file size to bind in a resource
-$pngSizeFilter = new FileSizeFilter(2, FileSizeFilter::MB);
-//Configure alloweed extensions to bind in a resource
-$allowedExtensionFilter = new FileExtensionFilter([
+//[WEB Filter] Configure a maximum file size to bind in a resource
+$webPngSizeFilter = new WebFileSizeFilter(2, FileSizeFilter::MB);
+//[WEB Filter] Configure alloweed extensions to bind in a resource
+$webAllowedExtensionFilter = new WebFileExtensionFilter([
     FileExtensionFilter::JPEG,
     FileExtensionFilter::PNG    
 ]);
 
-//Prepare object name, url and filters (second resource is a GIF contenttype not allowed format)
+$localJpgSizeFilter = new LocalFileSizeFilter(1, 'M');
+$localAllowedExtensionFilter = new LocalFileExtensionFilter([
+    'json',
+    'doc',
+    'docx'
+]);
+
+//Prepare object name, url and filters
 $duf->prepare([
-    new Resource('object_one.png', 'https://dummyimage.com/600x400/000/fff', [$pngSizeFilter]),
-    new Resource('object_two.png', 'https://dummyimage.com/600x400/000/fff.gif', [$allowedExtensionFilter]),
-    new Resource('object_three.png', 'https://dummyimage.com/100x100/000/fff', [$pngSizeFilter, $allowedExtensionFilter])    
+    new WebResource('object_one.png', 'https://dummyimage.com/600x400/000/fff', [$webPngSizeFilter]),
+    new WebResource('object_two.png', 'https://dummyimage.com/600x400/000/fff.gif', [$webAllowedExtensionFilter]),
+    new WebResource('object_three.png', 'https://dummyimage.com/100x100/000/fff', [$webPngSizeFilter, $webAllowedExtensionFilter]),
+    new LocalResource('imagem', '/home/test/images/test.jpg', [$localJpgSizeFilter]),
+    new LocalResource('imagem', '/home/test/project/composer.json', [$localAllowedExtensionFilter]),  
 ]);
 
 //Make download prepared files
@@ -103,12 +147,6 @@ $fileResults = $duf->upload();
 foreach ($fileResults as $fileResult) {
     echo (string)$fileResult.'<br/>';
 }
-/**
- * Results:
- * Invalid file extension file: image/gif
- * https://storage.googleapis.com/meubucket666/object_one.png
- * https://storage.googleapis.com/meubucket666/object_three.png
- */
 //You can dump result objects to see more details
 
 //Working with result object:
@@ -120,11 +158,30 @@ foreach ($fileResults as $fileResult) {
     }
     echo "File {$fileResult->getName()} uploaded sucessfull<br/>";
 }
-/**
- * Results:
- * File object_two.png contains error: Invalid file extension file: image/gif
- * File object_one.png uploaded sucessfull
- * File object_three.png uploaded sucessfull
- */
+
+//Write your own filters
+
+use JeanSouzaK\Duf\Filter\PathFilterable;
+use JeanSouzaK\Duf\Filter\HeaderFilterable;
+use JeanSouzaK\Duf\Filter\Filterable;
+
+//Local files filter
+class MyLocalFilter implements Filterable, PathFilterable 
+{
+     public function applyPathFilters(array $filePathInfo) 
+     {
+         //throw exception with message
+     }
+} 
+
+//Web files filter
+class MyWebFilter implements Filterable, HeaderFilterable
+{
+     public function applyHeaderFilter(array $fileHeadersInfo) 
+     {
+         //throw exception with message
+     }
+} 
+
 
 ```
