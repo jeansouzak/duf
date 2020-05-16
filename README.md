@@ -1,5 +1,5 @@
 # Duf - PHP Download and Upload Files
-Duf is a PHP package to download files from web and upload to other servers.
+Duf is a PHP package to download files from web/local and upload to other servers (Google Cloud Storage).
 
 <p align="center">
     <img src=".github/duf.png?raw=true" width="55%">
