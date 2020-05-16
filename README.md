@@ -8,7 +8,7 @@ Duf is a PHP package to download files from web/local and upload to other server
 
 
 - First package version: Download resources from web and local to upload to Google Cloud Storage ☑
-- Second package version: Create Duffer to upload to Amazon S3 ☐
+- Second package version: Create Duffer adapter to upload to Amazon S3 ☐
 
 ## Installing Duf
 
