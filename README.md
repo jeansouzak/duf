@@ -111,11 +111,11 @@ $duf = Duff::getInstance(Duff::GOOGLE_CLOUD_STORAGE, [
 ]);
 
 //[WEB Filter] Configure a maximum file size to bind in a resource
-$webPngSizeFilter = new WebFileSizeFilter(2, FileSizeFilter::MB);
+$webPngSizeFilter = new WebFileSizeFilter(2, WebFileSizeFilter::MB);
 //[WEB Filter] Configure alloweed extensions to bind in a resource
 $webAllowedExtensionFilter = new WebFileExtensionFilter([
-    FileExtensionFilter::JPEG,
-    FileExtensionFilter::PNG    
+    WebFileExtensionFilter::JPEG,
+    WebFileExtensionFilter::PNG    
 ]);
 
 $localJpgSizeFilter = new LocalFileSizeFilter(1, 'M');
