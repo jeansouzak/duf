@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace JeanSouzaK\Duf\Prepare;
 
 use JeanSouzaK\Duf\Download\HttpDownload;
+use JeanSouzaK\Duf\Filter\HeaderFilterable;
 
 class WebResource extends Resource
 {
