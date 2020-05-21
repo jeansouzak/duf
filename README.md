@@ -1,5 +1,5 @@
 # Duf - PHP Download and Upload Files
-Duf is a PHP package to download files from web and upload to other servers.
+Duf is a PHP package to download files from web/local and upload to other servers (Google Cloud Storage).
 
 <p align="center">
     <img src=".github/duf.png?raw=true" width="55%">
@@ -7,7 +7,9 @@ Duf is a PHP package to download files from web and upload to other servers.
     
 
 
-- First package version: upload to Google Cloud Storage
+- First package version: Download resources from web and local to upload to Google Cloud Storage ☑
+- Second package version: Create Duffer adapter to upload to Amazon S3 ☐
+
 ## Installing Duf
 
 The recommended way to install Duf is through
@@ -111,11 +113,11 @@ $duf = Duff::getInstance(Duff::GOOGLE_CLOUD_STORAGE, [
 ]);
 
 //[WEB Filter] Configure a maximum file size to bind in a resource
-$webPngSizeFilter = new WebFileSizeFilter(2, FileSizeFilter::MB);
+$webPngSizeFilter = new WebFileSizeFilter(2, WebFileSizeFilter::MB);
 //[WEB Filter] Configure alloweed extensions to bind in a resource
 $webAllowedExtensionFilter = new WebFileExtensionFilter([
-    FileExtensionFilter::JPEG,
-    FileExtensionFilter::PNG    
+    WebFileExtensionFilter::JPEG,
+    WebFileExtensionFilter::PNG    
 ]);
 
 $localJpgSizeFilter = new LocalFileSizeFilter(1, 'M');
@@ -131,7 +133,7 @@ $duf->prepare([
     new WebResource('object_two.png', 'https://dummyimage.com/600x400/000/fff.gif', [$webAllowedExtensionFilter]),
     new WebResource('object_three.png', 'https://dummyimage.com/100x100/000/fff', [$webPngSizeFilter, $webAllowedExtensionFilter]),
     new LocalResource('imagem', '/home/test/images/test.jpg', [$localJpgSizeFilter]),
-    new LocalResource('imagem', '/home/test/project/composer.json', [$localAllowedExtensionFilter]),  
+    new LocalResource('composer.json', '/home/test/project/composer.json', [$localAllowedExtensionFilter]),  
 ]);
 
 //Make download prepared files
