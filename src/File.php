@@ -10,10 +10,9 @@ class File
     const WAITING = -1;
     const FINISHED = 2;
 
-    public function __construct($name)
+    public function __construct()
     {
-        $this->status = self::WAITING;
-        $this->name = $name;
+        $this->status = self::WAITING;        
     }
 
 

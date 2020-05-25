@@ -3,16 +3,18 @@ declare(strict_types=1);
 
 namespace JeanSouzaK\Duf\Prepare;
 
+use JeanSouzaK\Duf\Download\DownloadOptions;
 use JeanSouzaK\Duf\Download\HttpDownload;
 use JeanSouzaK\Duf\Filter\HeaderFilterable;
 
 class WebResource extends Resource
 {
 
-    public function download() 
+    public function download(DownloadOptions $options = null) 
     {
         $httpDownload = new HttpDownload();
-        return $httpDownload->download($this);
+        $induceType = $options && $options->getInduceType() ? true : false;
+        return $httpDownload->download($this, $induceType);
     }
 
      /**
@@ -37,6 +39,14 @@ class WebResource extends Resource
         }
 
         return true;
+    }
+
+
+    public function induceExtensionFromContentType($headersContentType) 
+    {   
+        $contentTypes = $headersContentType && count($headersContentType) > 0  ? explode('/', $headersContentType[0]) : [];
+        $extensionType = count($contentTypes) > 1 ? '.'.$contentTypes[1] : '';
+        $this->name .= $extensionType;        
     }
 
 }

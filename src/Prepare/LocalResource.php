@@ -3,15 +3,17 @@ declare(strict_types=1);
 
 namespace JeanSouzaK\Duf\Prepare;
 
+use JeanSouzaK\Duf\Download\DownloadOptions;
 use JeanSouzaK\Duf\Download\LocalDownload;
 use JeanSouzaK\Duf\Filter\PathFilterable;
 
 class LocalResource extends Resource
 {
-    public function download()
+    public function download(DownloadOptions $options = null)
     {
         $localDownload = new LocalDownload();
-        return $localDownload->download($this);
+        $induceType = $options && $options->getInduceType() ? true : false;
+        return $localDownload->download($this, $induceType);
     }
 
     public function processPathFilters(array $headers)

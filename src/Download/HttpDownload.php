@@ -19,7 +19,8 @@ class HttpDownload implements Downloadable
     {
         $this->guzzleClient = new Client();
     }
-    public function download(Resourceable $resource)
+    
+    public function download(Resourceable $resource, $induceType = false)
     {
         $headers = $resource->getAuthentication();
         $response = $this->guzzleClient->get($resource->getUrl(), [
@@ -27,8 +28,11 @@ class HttpDownload implements Downloadable
             'stream' => true
         ]);
         
+        
         $resource->processHeaderFilters($response->getHeaders());
-
+        if($induceType) {
+            $resource->induceExtensionFromContentType($response->getHeader('Content-Type'));
+        }
         return $response;
     }
 }

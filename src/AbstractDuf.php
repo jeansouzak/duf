@@ -8,6 +8,7 @@ use JeanSouzaK\Duf\Prepare\FileResourceFactory;
 use JeanSouzaK\Duf\Filter\Filterable;
 use JeanSouzaK\Duf\Prepare\Resource;
 use GuzzleHttp\Psr7\Response;
+use JeanSouzaK\Duf\Download\DownloadOptions;
 use JeanSouzaK\Duf\Prepare\WebResource;
 
 abstract class AbstractDuf implements Dufable
@@ -86,13 +87,13 @@ abstract class AbstractDuf implements Dufable
      *
      * @return void
      */
-    public function download()
+    public function download(DownloadOptions $options = null)
     {
         /** @var Resource $fileResource */
         foreach ($this->fileResources as $fileResource) {
-            $file = new File((string)$fileResource);
+            $file = new File();
             try {
-                $response = $fileResource->download();
+                $response = $fileResource->download($options);
                 if(!$response) {
                     $file->setStatus(File::ERROR);
                     $file->setErrorMessage('Error on download file');
@@ -111,7 +112,7 @@ abstract class AbstractDuf implements Dufable
                 $file->setStatus(File::ERROR);
                 $file->setErrorMessage($e->getMessage());
             }
-            
+            $file->setName($fileResource->getName());
             $this->downloadedFiles[] = $file;
         }
         return $this;
