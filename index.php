@@ -2,6 +2,7 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
+use JeanSouzaK\Duf\Download\DownloadOptions;
 use JeanSouzaK\Duf\Duff;
 use JeanSouzaK\Duf\Prepare\WebResource;
 use JeanSouzaK\Duf\Filter\WebFileSizeFilter;
@@ -14,14 +15,14 @@ use JeanSouzaK\Duf\Filter\HeaderFilterable;
 use JeanSouzaK\Duf\Prepare\LocalResource;
 
 $duf = Duff::getInstance(Duff::GOOGLE_CLOUD_STORAGE, [
-    'project_id' => 'storage-test-227305',
-    'key_path' => '/home/env/storage-test-227305-8472347a39489.json'
+    'project_id' => 'mybucket-280818',
+    'key_path' => './mybucket-280818-14d6f8d296cd.json'
 ]);
 
 // - Chaining example -
 $uploadResults = $duf->prepare([
     new WebResource('teste.png', 'https://dummyimage.com/600x400/000/fff')
-])->download()->addBucket('meubucket666')->upload();
+])->download()->addBucket('dufbuckettest')->upload();
 
 
 // - Step-by-step example -
@@ -37,7 +38,7 @@ $duf->prepare([
 $duf->download();
 
 //Add google cloud storage bucket name
-$duf->addBucket('meubucket666');
+$duf->addBucket('dufbuckettest');
 
 //Upload downloaded files to bucket and get results
 $uploadResults = $duf->upload();
@@ -65,7 +66,7 @@ $duf->prepare([
 $duf->download();
 
 //Add google cloud storage bucket name
-$duf->addBucket('meubucket666');
+$duf->addBucket('dufbuckettest');
 
 //Upload downloaded files to bucket and get results
 $fileResults = $duf->upload();
@@ -73,8 +74,8 @@ $fileResults = $duf->upload();
 
 //Call Factory to get google cloud storage duffer instance
 $duf = Duff::getInstance(Duff::GOOGLE_CLOUD_STORAGE, [
-    'project_id' => 'storage-test-277005',
-    'key_path' => '/home/jean/Workspace/estudo/down-up-files/env/storage-test-277005-3334a1054345.json'
+    'project_id' => 'mybucket-280818',
+    'key_path' => './mybucket-280818-14d6f8d296cd.json'
 ]);
 
 //[WEB Filter] Configure a maximum file size to bind in a resource
@@ -101,11 +102,18 @@ $duf->prepare([
     new LocalResource('imagem', '/home/test/project/composer.json', [$localAllowedExtensionFilter]),  
 ]);
 
+//Create DownloadOptions(optional)
+$downloadOptions = new DownloadOptions();
+//Telling Duf to induce the file extension(default false)
+$downloadOptions->setInduceType(true);
+//Using file URL to induce file extension(defaul INDUCE_FROM_BOTH)
+$downloadOptions->setInduceMethod(DownloadOptions::INDUCE_FROM_URL);
+
 //Make download prepared files
-$duf->download();
+$duf->download($downloadOptions);
 
 //Add google cloud storage bucket name
-$duf->addBucket('meubucket666');
+$duf->addBucket('dufbuckettest');
 
 //Upload downloaded files to bucket and get results
 $fileResults = $duf->upload();
