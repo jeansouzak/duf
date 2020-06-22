@@ -15,11 +15,6 @@ abstract class Resource implements Resourceable
     protected $url;
 
     /**
-     * @var []
-     */
-    protected $authentication;
-
-    /**
      * Defined name
      *
      * @var string
@@ -36,14 +31,12 @@ abstract class Resource implements Resourceable
 
     /**
      * @var string $url
-     * @var Authentication $authentication
      */
-    public function __construct($name, $url, $filters = [], array $authentication = [])
+    public function __construct($name, $url, $filters = [])
     {
         $this->name = $name;
         $this->url = $url;
         $this->filters = $filters;
-        $this->authentication = $authentication;
     }
 
     
@@ -114,29 +107,4 @@ abstract class Resource implements Resourceable
         return $this->name;
     }
 
-     
-
-    /**
-     * Get the value of authentication
-     *
-     * @return  []
-     */ 
-    public function getAuthentication()
-    {
-        return $this->authentication;
-    }
-
-    /**
-     * Set the value of authentication
-     *
-     * @param  []  $authentication
-     *
-     * @return  self
-     */ 
-    public function setAuthentication(array $authentication)
-    {
-        $this->authentication = $authentication;
-
-        return $this;
-    }
 }

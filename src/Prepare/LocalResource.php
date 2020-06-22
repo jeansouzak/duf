@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace JeanSouzaK\Duf\Prepare;
@@ -11,7 +12,7 @@ class LocalResource extends Resource
 {
     public function download(DownloadOptions $options = null)
     {
-        $localDownload = new LocalDownload();
+        $localDownload = new LocalDownload($this);
         $induceType = $options && $options->getInduceType() ? true : false;
         return $localDownload->download($this, $induceType);
     }
@@ -24,7 +25,7 @@ class LocalResource extends Resource
         $pathFilters = array_filter($this->filters, function ($filter) {
             return $filter instanceof PathFilterable;
         });
-            
+
         /** @var HeaderFilterable $headerFilter */
         foreach ($pathFilters as $pathFilters) {
             $pathFilters->applyPathFilters($headers);

@@ -7,5 +7,5 @@ use JeanSouzaK\Duf\Prepare\Resourceable;
 
 interface Downloadable
 {
-    public function download(Resourceable $resourceable);
+    public function download();
 }

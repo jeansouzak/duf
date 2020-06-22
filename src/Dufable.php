@@ -14,7 +14,7 @@ interface Dufable
      * @param string $token
      * @return void
      */
-    public function prepare(array $resources, $token = '');
+    public function prepare(array $resources);
 
     public function download();
 
