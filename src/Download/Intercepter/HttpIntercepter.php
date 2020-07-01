@@ -58,12 +58,12 @@ class HttpIntercepter implements HttpInterceptable
             case DownloadOptions::INDUCE_FROM_URL:
                 return $this->induceExtensionFromUrl($this->webResource->getUrl());
             case DownloadOptions::INDUCE_FROM_CONTENT_TYPE:
-                return $this->induceExtensionFromContentType($response->getHeaders());
+                return $this->induceExtensionFromContentType($response->getHeaderLine('Content-Type'));
             default:
                 if ($this->induceExtensionFromUrl($this->webResource->getUrl())) {
                     return true;
                 }
-                return $this->induceExtensionFromContentType($response->getHeaders());
+                return $this->induceExtensionFromContentType($response->getHeaderLine('Content-Type'));
         }
     }
 
@@ -77,22 +77,23 @@ class HttpIntercepter implements HttpInterceptable
         }
 
         if (!$queryParamsDelimiter) {
-            $name = $this->webResouce->getName() . $extension;
-            $this->webResouce->setName($name);
+            $name = $this->webResource->getName() . $extension;
+            $this->webResource->setName($name);
             return true;
         }
 
         $extension = substr($extension, 0, $queryParamsDelimiter);
-        $name = $this->webResouce->getName() . $extension;
-        $this->webResouce->setName($name);
+        $name = $this->webResource->getName() . $extension;
+        $this->webResource->setName($name);
         return true;
     }
 
     public function induceExtensionFromContentType($headersContentType)
     {
-        $contentTypes = $headersContentType && count($headersContentType) > 0  ? explode('/', $headersContentType[0]) : [];
+        echo(json_encode($headersContentType));
+        $contentTypes = $headersContentType ? explode('/', $headersContentType) : [];
         $extensionType = count($contentTypes) > 1 ? '.' . $contentTypes[1] : '';
-        $name = $this->webResouce->getName() . $extensionType;
-        $this->webResouce->setName($name);
+        $name = $this->webResource->getName() . $extensionType;
+        $this->webResource->setName($name);
     }
 }
