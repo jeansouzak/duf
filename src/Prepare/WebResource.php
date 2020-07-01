@@ -10,18 +10,16 @@ use JeanSouzaK\Duf\Download\HttpDownload;
 class WebResource extends Resource
 {
 
-    public function __construct($name, $url, $filters = [], DownloadOptions $downloadOptions = null)
-    {
-        parent::__construct($name, $url, $filters);
-        $this->$downloadOptions = $downloadOptions;
-    }
-
     /**
-     * 
-     * 
      * @var DownloadOptions
      */
     private $downloadOptions;
+
+    public function __construct($name, $url, $filters = [], DownloadOptions $downloadOptions = null)
+    {
+        parent::__construct($name, $url, $filters);
+        $this->downloadOptions = $downloadOptions;
+    }
 
     public function download(DownloadOptions $options = null)
     {

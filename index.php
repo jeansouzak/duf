@@ -93,9 +93,12 @@ $localAllowedExtensionFilter = new LocalFileExtensionFilter([
     'docx'
 ]);
 
+$downloadOptions = new DownloadOptions();
+$downloadOptions->setInduceType(true);
+
 //Prepare object name, url and filters (second resource is a GIF contenttype not allowed format)
 $duf->prepare([
-    new WebResource('object_one.png', 'https://dummyimage.com/600x400/000/fff', [$webPngSizeFilter]),
+    new WebResource('object_one.png', 'https://dummyimage.com/600x400/000/fff', [$webPngSizeFilter], $downloadOptions),
     new WebResource('object_two.png', 'https://dummyimage.com/600x400/000/fff.gif', [$webAllowedExtensionFilter]),
     new WebResource('object_three.png', 'https://dummyimage.com/100x100/000/fff', [$webPngSizeFilter, $webAllowedExtensionFilter]),
     new LocalResource('imagem', '/home/test/images/test.jpg', [$localJpgSizeFilter]),
