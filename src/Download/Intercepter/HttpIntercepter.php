@@ -90,7 +90,6 @@ class HttpIntercepter implements HttpInterceptable
 
     public function induceExtensionFromContentType($headersContentType)
     {
-        echo(json_encode($headersContentType));
         $contentTypes = $headersContentType ? explode('/', $headersContentType) : [];
         $extensionType = count($contentTypes) > 1 ? '.' . $contentTypes[1] : '';
         $name = $this->webResource->getName() . $extensionType;
