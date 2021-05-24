@@ -83,7 +83,7 @@ class HttpIntercepter implements HttpInterceptable
         }
 
         $extension = substr($extension, 0, $queryParamsDelimiter);
-        $name = $this->webResource->getName() . $extension;
+        $name = $this->webResource->getName() . '.' . $extension;
         $this->webResource->setName($name);
         return true;
     }
