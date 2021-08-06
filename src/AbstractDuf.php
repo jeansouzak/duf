@@ -72,7 +72,7 @@ abstract class AbstractDuf implements Dufable
                 throw new \InvalidArgumentException('One or more resources not contain an empty name or path');
             }
             if ($resource instanceof WebResource && !filter_var($resource->getUrl(), FILTER_VALIDATE_URL)) {
-                throw new \InvalidArgumentException('One or more web resources contain an invalid URL');
+                throw new \InvalidArgumentException('One or more web resources contain an invalid URL - ' . $resource->getUrl());
             }
             $this->fileResources[] = $resource;
         }, ARRAY_FILTER_USE_BOTH);
