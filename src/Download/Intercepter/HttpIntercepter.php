@@ -77,7 +77,7 @@ class HttpIntercepter implements HttpInterceptable
         }
 
         if (!$queryParamsDelimiter) {
-            $name = $this->webResource->getName() . $extension;
+            $name = $this->webResource->getName() . '.' . $extension;
             $this->webResource->setName($name);
             return true;
         }
