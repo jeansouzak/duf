@@ -62,10 +62,10 @@ class GCSDuffer extends AbstractDuf
         foreach ($this->filesToUpload as $fileToUpload) {
             try {
                 $fileName = $fileToUpload->getName();
-                $bucket->upload($fileToUpload->getBytes(), [
+                $bucketObj = $bucket->upload($fileToUpload->getBytes(), [
                     'name' => $fileName
                 ]);
-                $fileToUpload->setResultPath(self::STORAGE_URI . $this->bucketName . '/' . $fileName);
+                $fileToUpload->setResultPath(self::STORAGE_URI . $this->bucketName . '/' . $bucketObj->name() ? $bucketObj->name() : $fileName);
                 $fileToUpload->setStatus(FILE::FINISHED);
             } catch (\Exception $e) {
                 $fileToUpload->setErrorMessage($e->getMessage());
