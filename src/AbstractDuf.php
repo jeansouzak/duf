@@ -11,6 +11,8 @@ use JeanSouzaK\Duf\Prepare\Resource;
 use GuzzleHttp\Psr7\Response;
 use JeanSouzaK\Duf\Download\DownloadOptions;
 use JeanSouzaK\Duf\Prepare\WebResource;
+use JeanSouzaK\Duf\Files\Fileable;
+use JeanSouzaK\Duf\Files\File;
 
 abstract class AbstractDuf implements Dufable
 {
@@ -81,38 +83,41 @@ abstract class AbstractDuf implements Dufable
     }
 
     /**
-     * Download prepared files
+     * Download Processes files read for download
      *
      * @return void
      */
-    public function download(DownloadOptions $options = null)
+    abstract public function download();
+
+    /**
+     * Download a file
+     *
+     * @return void
+     */
+    protected function downloadFile(Fileable $file, Resource $fileResource, DownloadOptions $options = null)
     {
         /** @var Resource $fileResource */
-        foreach ($this->fileResources as $fileResource) {
-            $file = new File();
-            try {
-                $response = $fileResource->download($options);
-                if (!$response) {
-                    $file->setStatus(File::ERROR);
-                    $file->setErrorMessage('Error on download file');
-                } else if ($fileResource instanceof WebResource) {
-                    //$fileResource->processHeaderFilters($response->getHeaders());
-                    $body = $response->getBody();
-                    while (!$body->eof()) {
-                        $file->addBytes($body->read(1024));
-                    }
-                } else {
-                    $fileResource->processPathFilters(array_merge(pathinfo($fileResource->getUrl()), ['size' => filesize($fileResource->getUrl())]));
-                    $file->addBytes($response);
-                }
-            } catch (\Exception $e) {
+        try {
+            $response = $fileResource->download($options);
+            if (!$response) {
                 $file->setStatus(File::ERROR);
-                $file->setErrorMessage($e->getMessage());
+                $file->setErrorMessage('Error on download file');
+            } else if ($fileResource instanceof WebResource) {
+                //$fileResource->processHeaderFilters($response->getHeaders());
+                $body = $response->getBody();
+                while (!$body->eof()) {
+                    $file->addBytes($body->read(1024));
+                }
+            } else {
+                $fileResource->processPathFilters(array_merge(pathinfo($fileResource->getUrl()), ['size' => filesize($fileResource->getUrl())]));
+                $file->addBytes($response);
             }
-            $file->setName($fileResource->getName());
-            $this->downloadedFiles[] = $file;
+        } catch (\Exception $e) {
+            $file->setStatus(File::ERROR);
+            $file->setErrorMessage($e->getMessage());
         }
-        return $this;
+        $file->setName($fileResource->getName());
+        $this->downloadedFiles[] = $file;
     }
 
 

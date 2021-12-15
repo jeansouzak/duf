@@ -4,9 +4,11 @@ declare (strict_types = 1);
 namespace JeanSouzaK\Duf\Duffer;
 
 use Google\Cloud\Storage\StorageClient;
-use JeanSouzaK\Duf\File;
+use JeanSouzaK\Duf\Files\GCSFile;
 use JeanSouzaK\Duf\DownloadUploadFile;
 use JeanSouzaK\Duf\AbstractDuf;
+use JeanSouzaK\Duf\Download\DownloadOptions;
+use JeanSouzaK\Duf\Files\File;
 
 class GCSDuffer extends AbstractDuf
 {
@@ -39,6 +41,12 @@ class GCSDuffer extends AbstractDuf
         return $this;
     }
 
+    public function download(DownloadOptions $options = null){
+        foreach ($this->fileResources as $fileResource) {
+            parent::downloadFile(new GCSFile(), $fileResource, $options);
+        }
+        return $this;
+    }
 
     public function upload()
     {
@@ -65,11 +73,13 @@ class GCSDuffer extends AbstractDuf
                 $bucketObj = $bucket->upload($fileToUpload->getBytes(), [
                     'name' => $fileName
                 ]);
-                $fileToUpload->setResultPath(self::STORAGE_URI . $this->bucketName . '/' . ($bucketObj->name() ? $bucketObj->name() : $fileName));
-                $fileToUpload->setStatus(FILE::FINISHED);
+                $fileToUpload->setSelfLink($bucketObj->info()['selfLink']);
+                //self::STORAGE_URI . $this->bucketName . '/' . ($bucketObj->name() ? $bucketObj->name() : $fileName)
+                $fileToUpload->setResultPath($bucketObj->info()['mediaLink']);
+                $fileToUpload->setStatus(File::FINISHED);
             } catch (\Exception $e) {
                 $fileToUpload->setErrorMessage($e->getMessage());
-                $fileToUpload->setStatus(FILE::ERROR);
+                $fileToUpload->setStatus(File::ERROR);
                 throw $e;
             }
         }

@@ -1,9 +1,11 @@
 <?php
 declare(strict_types = 1);
 
-namespace JeanSouzaK\Duf;
+namespace JeanSouzaK\Duf\Files;
 
-class File
+use JeanSouzaK\Duf\Files\Fileable;
+
+class File implements Fileable
 {
     const DOWNLOADED = 1;
     const ERROR = 0;
