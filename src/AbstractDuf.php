@@ -11,6 +11,8 @@ use JeanSouzaK\Duf\Prepare\Resource;
 use GuzzleHttp\Psr7\Response;
 use JeanSouzaK\Duf\Download\DownloadOptions;
 use JeanSouzaK\Duf\Prepare\WebResource;
+use JeanSouzaK\Duf\Files\Fileable;
+use JeanSouzaK\Duf\Files\File;
 
 abstract class AbstractDuf implements Dufable
 {
@@ -55,6 +57,13 @@ abstract class AbstractDuf implements Dufable
      */
     protected $filters;
 
+    /**
+     * Sets which type of file class will be used to manipulate downloaded files
+     * 
+     * @var string
+     */
+    protected $fileType;
+
     public function __construct()
     {
         $this->client = new Client();
@@ -76,12 +85,17 @@ abstract class AbstractDuf implements Dufable
             }
             $this->fileResources[] = $resource;
         }, ARRAY_FILTER_USE_BOTH);
+        $this->setFileType();
 
         return $this;
     }
 
+    protected function setFileType(){
+        $this->fileType = File::class;
+    }
+
     /**
-     * Download prepared files
+     * Download a file
      *
      * @return void
      */
@@ -89,7 +103,7 @@ abstract class AbstractDuf implements Dufable
     {
         /** @var Resource $fileResource */
         foreach ($this->fileResources as $fileResource) {
-            $file = new File();
+            $file = new $this->fileType();
             try {
                 $response = $fileResource->download($options);
                 if (!$response) {
@@ -114,7 +128,6 @@ abstract class AbstractDuf implements Dufable
         }
         return $this;
     }
-
 
     public function upload()
     {
