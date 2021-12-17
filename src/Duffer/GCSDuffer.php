@@ -70,8 +70,12 @@ class GCSDuffer extends AbstractDuf
                 $bucketObj = $bucket->upload($fileToUpload->getBytes(), [
                     'name' => $fileName
                 ]);
+
+                $fileToUpload->setId($bucketObj->info()['id']);
                 $fileToUpload->setSelfLink($bucketObj->info()['selfLink']);
-                //self::STORAGE_URI . $this->bucketName . '/' . ($bucketObj->name() ? $bucketObj->name() : $fileName)
+                $fileToUpload->setContentType($bucketObj->info()['contentType']);
+                $fileToUpload->setSize($bucketObj->info()['size']);
+                $fileToUpload->setTimeCreated($bucketObj->info()['timeCreated']);
                 $fileToUpload->setResultPath($bucketObj->info()['mediaLink']);
                 $fileToUpload->setStatus(File::FINISHED);
             } catch (\Exception $e) {
