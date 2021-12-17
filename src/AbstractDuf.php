@@ -57,6 +57,13 @@ abstract class AbstractDuf implements Dufable
      */
     protected $filters;
 
+    /**
+     * Sets which type of file class will be used to manipulate downloaded files
+     * 
+     * @var string
+     */
+    protected $fileType;
+
     public function __construct()
     {
         $this->client = new Client();
@@ -78,48 +85,49 @@ abstract class AbstractDuf implements Dufable
             }
             $this->fileResources[] = $resource;
         }, ARRAY_FILTER_USE_BOTH);
+        $this->setFileType();
 
         return $this;
     }
 
-    /**
-     * Download Processes files read for download
-     *
-     * @return void
-     */
-    abstract public function download();
+    protected function setFileType(){
+        $this->fileType = File::class;
+    }
 
     /**
      * Download a file
      *
      * @return void
      */
-    protected function downloadFile(Fileable $file, Resource $fileResource, DownloadOptions $options = null)
+    public function download(DownloadOptions $options = null)
     {
         /** @var Resource $fileResource */
-        try {
-            $response = $fileResource->download($options);
-            if (!$response) {
-                $file->setStatus(File::ERROR);
-                $file->setErrorMessage('Error on download file');
-            } else if ($fileResource instanceof WebResource) {
-                //$fileResource->processHeaderFilters($response->getHeaders());
-                $body = $response->getBody();
-                while (!$body->eof()) {
-                    $file->addBytes($body->read(1024));
+        foreach ($this->fileResources as $fileResource) {
+            $file = new $this->fileType();
+            try {
+                $response = $fileResource->download($options);
+                if (!$response) {
+                    $file->setStatus(File::ERROR);
+                    $file->setErrorMessage('Error on download file');
+                } else if ($fileResource instanceof WebResource) {
+                    //$fileResource->processHeaderFilters($response->getHeaders());
+                    $body = $response->getBody();
+                    while (!$body->eof()) {
+                        $file->addBytes($body->read(1024));
+                    }
+                } else {
+                    $fileResource->processPathFilters(array_merge(pathinfo($fileResource->getUrl()), ['size' => filesize($fileResource->getUrl())]));
+                    $file->addBytes($response);
                 }
-            } else {
-                $fileResource->processPathFilters(array_merge(pathinfo($fileResource->getUrl()), ['size' => filesize($fileResource->getUrl())]));
-                $file->addBytes($response);
+            } catch (\Exception $e) {
+                $file->setStatus(File::ERROR);
+                $file->setErrorMessage($e->getMessage());
             }
-        } catch (\Exception $e) {
-            $file->setStatus(File::ERROR);
-            $file->setErrorMessage($e->getMessage());
+            $file->setName($fileResource->getName());
+            $this->downloadedFiles[] = $file;
         }
-        $file->setName($fileResource->getName());
-        $this->downloadedFiles[] = $file;
+        return $this;
     }
-
 
     public function upload()
     {

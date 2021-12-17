@@ -41,11 +41,8 @@ class GCSDuffer extends AbstractDuf
         return $this;
     }
 
-    public function download(DownloadOptions $options = null){
-        foreach ($this->fileResources as $fileResource) {
-            parent::downloadFile(new GCSFile(), $fileResource, $options);
-        }
-        return $this;
+    protected function setFileType() {
+        $this->fileType = GCSFile::class;
     }
 
     public function upload()
