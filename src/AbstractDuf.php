@@ -116,7 +116,11 @@ abstract class AbstractDuf implements Dufable
                         $file->addBytes($body->read(1024));
                     }
                 } else {
-                    $fileResource->processPathFilters(array_merge(pathinfo($fileResource->getUrl()), ['size' => filesize($fileResource->getUrl())]));
+                    $header = [
+                      'size' => filesize($fileResource->getUrl()),
+                      'extension' => mime_content_type($fileResource->getUrl())
+                    ];
+                    $fileResource->processPathFilters(array_merge(pathinfo($fileResource->getUrl()), $header));
                     $file->addBytes($response);
                 }
             } catch (\Exception $e) {
