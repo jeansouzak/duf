@@ -40,7 +40,7 @@ class WebFileExtensionFilter implements Filterable, HeaderFilterable
             throw new \Exception('Missing or empty Content-Type on response header');
         }
         $fileExtension = $contentType[0];
-        if(!ArrayTool::inArrayRecursive(strtolower($fileExtension), $this->formats)) {
+        if (!ArrayTool::inArrayRecursive(strtolower($fileExtension), $this->formats)) {
             throw new FileExtensionException('Invalid file extension file: '.$fileExtension);
         }
     }  
