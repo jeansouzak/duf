@@ -30,13 +30,15 @@ class WebFileExtensionFilter implements Filterable, HeaderFilterable
     }
   
 
-    public function applyHeaderFilter(array $headers) {        
-        $contentType = $headers['Content-Type'][0] ?? $headers['content-type'][0] ?? null;
-        if($contentType == null) {
+    public function applyHeaderFilter(array $headers) {
+        $contentType = $headers['Content-Type'] ?? $headers['content-type'] ?? null;
+
+        if ($contentType == null || count($contentType) == 0) {
             throw new \Exception('Invalid headers for FileExtension applyHeaderFilter');
         }
-        if(!ArrayTool::inArrayRecursive(strtolower($contentType), $this->formats)) {
-            throw new FileExtensionException('Invalid file extension file: '.$contentType);
+        $fileExtension = $contentType[0];
+        if(!ArrayTool::inArrayRecursive(strtolower($fileExtension), $this->formats)) {
+            throw new FileExtensionException('Invalid file extension file: '.$fileExtension);
         }
     }  
     
